@@ -8,8 +8,7 @@ There were three ways this step could go:
     2. We find a website of philosophy texts that needs formatting.
     3. We find different websites for different styles of philosophy texts. 
 
-After taking everything into account, we decided to go with step 2. 
-We went with option 2: we will parse erudit.org for philosophy texts.
+After taking everything into account, we decided to go with step 2 and parse erudit.org for philosophy texts.
 
 ## Step 2: Parse and format the texts
 To parse the texts, we used the functions that we defined in "scrape_models.py" and ran "parse_erudit_site(revues)". The strategy for each journal was list all editions, list all texts on to each editions and then parse the texts. Theses functions allowed us to parse 263 129 sentences and put them in a 86 917 ko file, which constitutes . Do note that since wifi , but an if-else was programmed in the functions to allow parsing the missing texts. 
