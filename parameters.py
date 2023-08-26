@@ -12,3 +12,7 @@ features = {
 revues = ["philoso", "ltp", "sp"]    #This represents all journals in french under the "philosophy" label on erudit.org. 
 
 model_type = "dbddv01/gpt2-french-small"
+
+headers = {
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.86 Safari/537.36',
+    }

@@ -1,13 +1,11 @@
-import requests, re, PyPDF2, io, warnings
+import requests, re, PyPDF2, io
 from bs4 import BeautifulSoup
 import pandas as pd
 from nltk import sent_tokenize, word_tokenize
-from parameters import features, revues
-
-warnings.simplefilter(action='ignore', category=FutureWarning)
+from parameters import features, revues, headers
 
 def get_content(url):
-    r = requests.get(url, timeout =10)
+    r = requests.get(url, timeout =10, headers=headers)
     soup = BeautifulSoup(r.content, 'html.parser')
     return soup
 
@@ -39,7 +37,6 @@ def parse_erudit_text(text_soup):
     soup, csv >>> new rows in the csv
     Parse a soup on Erudit and save it in the csv file
     """
-    #df = pd.DataFrame(columns = ['Journal', 'Author', 'Year', 'Title', 'section_rank', 'par_rank', 'sent_rank', 'text'])
     df = pd.read_csv("data_files//erudit.csv", index_col="Unnamed: 0", encoding="utf-8", dtype=features)
 
     #metadata
@@ -50,7 +47,15 @@ def parse_erudit_text(text_soup):
     author = text_soup.find("ul", {"class":"grauteur doc-head__authors"}).text
     infos = text_soup.find_all("div", {"class":"col-sm-6 doc-head__metadata"})[1]
     revue = infos.find("a").text
-    annee = infos.find_all("span")[1].text[-4:]
+    try:
+        annee = infos.find_all("span")[1].text[-4:]
+    except:
+        try:
+            annee = re.findall(r"(?:(?:18|19|20|21)[0-9]{2})", infos.text)[0]
+        except:
+            annee = "0000"
+
+
     obj_meta = {
         "Title": title,
         "Author": author,
@@ -59,10 +64,13 @@ def parse_erudit_text(text_soup):
     }
 
     #text and sections
-    resume = text_soup.find("section", {"id":"resume-fr"}).find("p").text
+    try:    #sometimes there is no abstract
+        resume = text_soup.find("section", {"id":"resume-fr"}).find("p").text
+    except:
+        resume = ""
     all_sections = text_soup.find("section", {"id":"corps"}).find_all("section")
 
-    #sentences in sections
+    #sentences in resume
     for idx, sentence in enumerate(sent_tokenize(resume)):
         obj_dict = {
             "section_rank": 0,
@@ -73,7 +81,7 @@ def parse_erudit_text(text_soup):
         obj_dict.update(obj_meta)
         df = df.append(obj_dict, ignore_index=True)
 
-
+    #sentences in sections
     for no, section in enumerate(all_sections):
         for par, paragraph in enumerate(section):
             for idx, sentence in enumerate(sent_tokenize(paragraph.text)):
@@ -85,6 +93,7 @@ def parse_erudit_text(text_soup):
                 }
                 obj_dict.update(obj_meta)
                 df = df.append(obj_dict, ignore_index=True)
+
     df.to_csv("data_files//erudit.csv")
     
 
@@ -147,3 +156,6 @@ def parse_aristotle():
     all_texts = " ".join(all_texts.text())
     with open("aristotle.txt", "w") as f:
         f.write(all_texts)
+
+if __name__ == "__main__":  #Starts the script if opened directly
+    parse_erudit_site(revues)
