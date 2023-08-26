@@ -38,6 +38,7 @@ def parse_erudit_text(text_soup):
     Parse a soup on Erudit and save it in the csv file
     """
     df = pd.read_csv("data_files//erudit.csv", index_col="Unnamed: 0", encoding="utf-8", dtype=features)
+    list_of_dict = []
 
     #metadata
     title = text_soup.find("span", {"class":"titre"}).text
@@ -79,7 +80,7 @@ def parse_erudit_text(text_soup):
             "text": sentence
         }
         obj_dict.update(obj_meta)
-        df = df.append(obj_dict, ignore_index=True)
+        list_of_dict.append(obj_dict)
 
     #sentences in sections
     for no, section in enumerate(all_sections):
@@ -92,8 +93,10 @@ def parse_erudit_text(text_soup):
                     "text": sentence
                 }
                 obj_dict.update(obj_meta)
-                df = df.append(obj_dict, ignore_index=True)
+                list_of_dict.append(obj_dict)
 
+    new_df = pd.DataFrame.from_dict(list_of_dict)
+    df = pd.concat([df, new_df])
     df.to_csv("data_files//erudit.csv")
     
 
